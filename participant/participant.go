@@ -39,7 +39,6 @@ type LoginResponse struct {
 	IsAdmin                           bool     `bson:"isAdmin" json:"isAdmin"`
 }
 
-
 //GetParticipant - handler to get expenses
 func GetParticipant(teamName string) (TeamDetails, error) {
 	participantObject := TeamDetails{}
@@ -61,6 +60,27 @@ func GetParticipant(teamName string) (TeamDetails, error) {
 	return participantObject, err
 }
 
+//getAllteamDetails -  obtain all team details
+func GetAllTeamDetails()([]TeamDetails,error){
+	teams := []TeamDetails{}
+	teamsResponse := []TeamDetails{}
+
+	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	if err != nil {
+		fmt.Println("Mongo error", err.Error())
+		return teamsResponse, errors.New("Mongo connection Error " + err.Error())
+	}
+	defer session.Close()
+	err = session.DB("UBHacking").C("TeamDetails").Find(nil).All(&teams)
+
+	for _,val := range teams{
+		if(!val.IsAdmin){
+			teamsResponse = append(teamsResponse,val);
+		}
+	}
+	return teamsResponse,err;
+
+}
 
 //Login - Login
 func Login(userName,password string) (LoginResponse,error){
