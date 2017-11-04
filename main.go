@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/UBHackathonManagement/participant"
 	"github.com/unrolled/render"
@@ -26,33 +27,64 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 //TestRoute - test route
 func TestRoute(w http.ResponseWriter, r *http.Request) {
 	//render := render.New()
-	fmt.Fprint(w,"Hello World !")
+	fmt.Fprint(w, "Hello World !")
 	//render.JSON(w, http.StatusOK, nil)
 	return
 }
 
+//todo : use this later for login input in POST request
 type User struct {
-	UserName          string `bson:"userName" json:"userName"`
-	Password          string `bson:"password" json:"password"`
+	UserName string `bson:"userName" json:"userName"`
+	Password string `bson:"password" json:"password"`
 }
 
-func LoginHandler(w http.ResponseWriter,r *http.Request){
+//LoginHandler - LoginHandler
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//userObject := User{}
 	render := render.New()
 	userName := r.URL.Query().Get("userName")
 	password := r.URL.Query().Get("password")
 
-	resp,_ := participant.Login(userName,password);
-
+	resp, _ := participant.Login(userName, password)
 
 	badResponse := participant.LoginResponse{}
-	badResponse.IsAdmin = false;
-	badResponse.Status = 403;
+	badResponse.IsAdmin = false
+	badResponse.Status = 403
 
-	if (resp.Status == 200){
-		render.JSON(w,http.StatusOK,resp)
-	}else{
-		render.JSON(w,http.StatusForbidden,badResponse)
+	if resp.Status == 200 {
+		render.JSON(w, http.StatusOK, resp)
+	} else {
+		render.JSON(w, http.StatusForbidden, badResponse)
+	}
+}
+
+//UpdateTeamDetails - UpdateTeamDetails
+func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
+
+	render := render.New()
+	team := participant.TeamDetails{}
+
+	//decoding the request into team, so that it can be used to save the team details
+	err := json.NewDecoder(r.Body).Decode(&team)
+	if err != nil {
+
+	}
+
+	fmt.Println("******* input ******", team)
+	err = participant.UpdateTeamDetails(team)
+
+	updateResponse := participant.UpdateResponse{}
+
+	if err != nil {
+		updateResponse.Status = 403
+		updateResponse.Message = "Cannot Update Team Details"
+		render.JSON(w, http.StatusOK, updateResponse)
+		return
+	} else {
+		updateResponse.Status = 200
+		updateResponse.Message = "Successfully Updated Team Details"
+		render.JSON(w, http.StatusOK, updateResponse)
+		return
 	}
 }
 
@@ -60,5 +92,6 @@ func main() {
 	fmt.Println("Started UB Hackathon Management....")
 	http.HandleFunc("/test", TestRoute)
 	http.HandleFunc("/login", LoginHandler)
+	http.HandleFunc("/team/update", UpdateTeamDetails)
 	http.ListenAndServe(":8889", nil)
 }
