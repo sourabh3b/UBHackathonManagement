@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-//GetTeamByName - handler to get team details by name
+//GetTeamByName - handler to get team details by names
 func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
 
@@ -27,7 +27,7 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 //TestRoute - test route
 func TestRoute(w http.ResponseWriter, r *http.Request) {
 	//render := render.New()
-	fmt.Fprint(w, "Hello World !")
+	fmt.Fprint(w,"Hello World !")
 	//render.JSON(w, http.StatusOK, nil)
 	return
 }
@@ -88,10 +88,21 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetTeamDetailsHandler(w http.ResponseWriter,r *http.Request){
+	render := render.New()
+	teamsResponse,err :=participant.GetAllTeamDetails();
+	if(err != nil){
+		render.JSON(w,http.StatusInternalServerError,teamsResponse);
+	}else{
+		render.JSON(w,http.StatusOK,teamsResponse);
+	}
+
+}
 func main() {
 	fmt.Println("Started UB Hackathon Management....")
 	http.HandleFunc("/test", TestRoute)
 	http.HandleFunc("/login", LoginHandler)
 	http.HandleFunc("/team/update", UpdateTeamDetails)
+	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
 	http.ListenAndServe(":8889", nil)
 }
