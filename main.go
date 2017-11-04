@@ -58,6 +58,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetTeamDetailsHandler(w http.ResponseWriter,r *http.Request){
+	render := render.New()
+	teamsResponse,err :=participant.GetAllTeamDetails();
+	if(err != nil){
+		render.JSON(w,http.StatusInternalServerError,teamsResponse);
+	}else{
+		render.JSON(w,http.StatusOK,teamsResponse);
+	}
+
+}
 //UpdateTeamDetails - UpdateTeamDetails
 func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 
@@ -92,6 +102,7 @@ func main() {
 	fmt.Println("Started UB Hackathon Management....")
 	http.HandleFunc("/test", TestRoute)
 	http.HandleFunc("/login", LoginHandler)
+	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
 	http.HandleFunc("/team/update", UpdateTeamDetails)
 	http.ListenAndServe(":8889", nil)
 }
