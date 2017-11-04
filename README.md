@@ -1,7 +1,7 @@
 # UBHackathonManagement
 UBHackathonManagement
 
-<img src="https://s3-us-west-2.amazonaws.com/ubhacking/Screen+Shot+2017-11-04+at+2.34.40+AM.png" width="100" height="100"/>
+<img src="https://s3-us-west-2.amazonaws.com/ubhacking/Screen+Shot+2017-11-04+at+2.34.40+AM.png" width="400" height="400"/>
 
 
 APIs List

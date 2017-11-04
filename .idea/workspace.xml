@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="74aa7d23-1d9c-43c8-a027-faa79e909bf2" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
     </list>
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,7 +17,7 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="45">
-              <caret line="3" column="95" lean-forward="false" selection-start-line="3" selection-start-column="95" selection-end-line="3" selection-end-column="95" />
+              <caret line="3" column="118" lean-forward="false" selection-start-line="3" selection-start-column="118" selection-end-line="3" selection-end-column="118" />
               <folding />
             </state>
           </provider>
@@ -123,7 +123,7 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
-          <caret line="3" column="95" lean-forward="false" selection-start-line="3" selection-start-column="95" selection-end-line="3" selection-end-column="95" />
+          <caret line="3" column="118" lean-forward="false" selection-start-line="3" selection-start-column="118" selection-end-line="3" selection-end-column="118" />
           <folding />
         </state>
       </provider>
