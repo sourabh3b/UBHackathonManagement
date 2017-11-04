@@ -136,9 +136,9 @@ func GetAllTeamDetails()([]TeamDetails,error){
 func Login(userName, password string) (LoginResponse, error) {
 	loginResponse := LoginResponse{}
 
-	//session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
 	//session, err := mgo.Dial("ec2-54-200-178-6.us-west-2.compute.amazonaws.com") //todo: change this to AWS mongo URL
-	session, err := mgo.Dial("54.200.178.6") //todo: change this to AWS mongo URL
+	//session, err := mgo.Dial("54.200.178.6") //todo: change this to AWS mongo URL
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
 		return loginResponse, errors.New("Mongo connection Error " + err.Error())
