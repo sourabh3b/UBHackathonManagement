@@ -27,7 +27,6 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 //TestRoute - test route
 func TestRoute(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
-
 	render.JSON(w, http.StatusOK, nil)
 	return
 }
