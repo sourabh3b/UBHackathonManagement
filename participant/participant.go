@@ -7,20 +7,42 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//Participant - data model
-type Participant struct {
-	TeamName                          string   `bson:"_id" json:"teamName"`
+//TeamDetails - data model
+type TeamDetails struct {
+	UserName                          string   `bson:"userName" json:"userName"`
 	Password                          string   `bson:"password" json:"password"`
-	ProjectInfo                       string   `bson:"projectInfo" json:"projectInfo"`
-	TeamPlayers                       []string `bson:"teamPlayers" json:"teamPlayers"`
-	University                        string   `bson:"university" json:"university"`
-	SoftwareOrProgrammingLanguageUsed string   `bson:"softwareOrProgrammingLanguageUsed" json:"softwareOrProgrammingLanguageUsed"`
+	IsAdmin                           bool     `bson:"isAdmin" json:"isAdmin"`
+	TeamName                          string   `bson:"teamName" json:"teamName"`
+	ProjectObjective                  string   `bson:"projectObjective" json:"projectObjective"`
+	Description                       string   `bson:"description" json:"description"`
+	TeamLeadName                      string   `bson:"teamLeadName" json:"teamLeadName"`
+	TeamPlayers                       []Member `bson:"teamMembers" json:"teamMembers"`
+	SoftwareOrProgrammingLanguageUsed []string   `bson:"softwareOrProgrammingLanguageUsed" json:"softwareOrProgrammingLanguageUsed"`
 	HardwareUsed                      string   `bson:"hardwareUsed" json:"hardwareUsed"`
 }
 
+type Member struct {
+	FName          string `bson:"fName" json:"fName"`
+	LName          string `bson:"lName" json:"lName"`
+	UniversityName string `bson:"universityName" json:"universityName"`
+	Year           string `bson:"year" json:"year"`
+	City          string `bson:"city" json:"city"`
+	Major           string `bson:"major" json:"major"`   //1st year, 2nd year, drop down
+	Degree         string `bson:"degree" json:"degree"` //BS, MS //drop down
+	PhoneNumber    string `bson:"phoneNumber" json:"phoneNumber"`
+	Email          string `bson:"email" json:"email"`
+}
+
+//TeamDetails - data model
+type LoginResponse struct {
+	Status                          int   `bson:"status" json:"status"`
+	IsAdmin                           bool     `bson:"isAdmin" json:"isAdmin"`
+}
+
+
 //GetParticipant - handler to get expenses
-func GetParticipant(teamName string) (Participant,error) {
-	participantObject := Participant{}
+func GetParticipant(teamName string) (TeamDetails, error) {
+	participantObject := TeamDetails{}
 	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
@@ -29,7 +51,7 @@ func GetParticipant(teamName string) (Participant,error) {
 
 	defer session.Close()
 
-	// Collection Expense
+	// query
 	err = session.DB("UBHacking").C("Participant").Find(bson.M{"_id": teamName}).One(&participantObject)
 	if err != nil {
 		fmt.Println("Unable to find participantObject by ID", err.Error())
@@ -37,4 +59,29 @@ func GetParticipant(teamName string) (Participant,error) {
 	}
 
 	return participantObject, err
+}
+
+
+//Login - Login
+func Login(userName,password string) (LoginResponse,error){
+	loginResponse := LoginResponse{}
+
+	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	if err != nil {
+		fmt.Println("Mongo error", err.Error())
+		return loginResponse, errors.New("Mongo connection Error " + err.Error())
+	}
+
+	defer session.Close()
+
+	// query for authentication
+	err = session.DB("UBHacking").C("TeamDetails").Find(bson.M{"userName": userName,"password":password}).One(&loginResponse)
+	if err != nil {
+		fmt.Println("Unable to find user", err.Error())
+		return loginResponse, errors.New("Unable to find user " + err.Error())
+	}
+
+	loginResponse.Status = 200;
+
+	return  loginResponse,err;
 }
