@@ -27,7 +27,7 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 //TestRoute - test route
 func TestRoute(w http.ResponseWriter, r *http.Request) {
 	//render := render.New()
-	fmt.Fprint(w,"Hello World !")
+	fmt.Fprint(w, "Hello World !")
 	//render.JSON(w, http.StatusOK, nil)
 	return
 }
@@ -70,17 +70,18 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	fmt.Println("******* input ******", team)
 	err = participant.UpdateTeamDetails(team)
 
 	updateResponse := participant.UpdateResponse{}
 
+	//if team doesnot exist, create a new team
 	if err != nil {
 		updateResponse.Status = 403
 		updateResponse.Message = "Cannot Update Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
 		return
 	} else {
+		//else update existing team
 		updateResponse.Status = 200
 		updateResponse.Message = "Successfully Updated Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
@@ -88,13 +89,13 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetTeamDetailsHandler(w http.ResponseWriter,r *http.Request){
+func GetTeamDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
-	teamsResponse,err :=participant.GetAllTeamDetails();
-	if(err != nil){
-		render.JSON(w,http.StatusInternalServerError,teamsResponse);
-	}else{
-		render.JSON(w,http.StatusOK,teamsResponse);
+	teamsResponse, err := participant.GetAllTeamDetails()
+	if err != nil {
+		render.JSON(w, http.StatusInternalServerError, teamsResponse)
+	} else {
+		render.JSON(w, http.StatusOK, teamsResponse)
 	}
 
 }
