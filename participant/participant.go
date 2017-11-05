@@ -3,6 +3,7 @@ package participant
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -42,33 +43,31 @@ type LoginResponse struct {
 
 //TeamDetails - data model
 type UpdateResponse struct {
-	Status  int    `bson:"status" json:"status"`
-	Message string `bson:"message" json:"message"`
-	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
+	Status  int     `bson:"status" json:"status"`
+	Message string  `bson:"message" json:"message"`
+	TypeAPI float64 `bson:"typeAPI" json:"typeAPI"`
 }
-
 
 //GetTeamResponse - data model
 type GetTeamResponse struct {
-	Status  int    `bson:"status" json:"status"`
-	Team TeamDetails `bson:"team" json:"team"`
-	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
+	Status  int         `bson:"status" json:"status"`
+	Team    TeamDetails `bson:"team" json:"team"`
+	TypeAPI int         `bson:"typeAPI" json:"typeAPI"`
 }
 
 //GetAllTeamsResponse - data model
 type GetAllTeamsResponse struct {
-	Status  int    `bson:"status" json:"status"`
-	Team []TeamDetails `bson:"team" json:"team"`
-	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
+	Status  int           `bson:"status" json:"status"`
+	Team    []TeamDetails `bson:"team" json:"team"`
+	TypeAPI int           `bson:"typeAPI" json:"typeAPI"`
 }
-
 
 //GetParticipant - handler to get expenses
 func GetTeamByName(teamName string) (TeamDetails, error) {
 	teamObj := TeamDetails{}
 	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
-		fmt.Println("Mongo error", err.Error())
+		log.Error("Mongo error", err.Error())
 		return teamObj, errors.New("Mongo connection Error " + err.Error())
 	}
 	defer session.Close()
@@ -104,12 +103,15 @@ func GetAllTeamDetails()([]TeamDetails,error){
 
 }
 ////GetParticipant - handler to get expenses
-func UpdateTeamDetails(team TeamDetails) error {
+func UpdateTeamDetails(team TeamDetails) (error, bool) {
+
+	var isNew bool
+
 	participantObject := TeamDetails{}
 	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
 	if err != nil {
-		fmt.Println("Mongo error", err.Error())
-		return errors.New("Mongo connection Error " + err.Error())
+		log.Error("Mongo error", err.Error())
+		return errors.New("Mongo connection Error " + err.Error()), false
 	}
 
 	defer session.Close()
@@ -117,15 +119,17 @@ func UpdateTeamDetails(team TeamDetails) error {
 	//query to get team details
 	err = session.DB("UBHacking").C("TeamDetails").Find(bson.M{"userName": team.UserName}).One(&participantObject)
 
+	//participantObject.Password = enteredPassword
 	//team doesn't exist, create new team
 	if err != nil {
-		participantObject.Password = "testpwd"
-		fmt.Println("Unable to find participantObject by ID", err.Error())
+		isNew = true
+		log.Info("Unable to find participantObject by ID", err.Error())
 		//return errors.New("Unable to find participantObject by ID " + err.Error())
 	}
 
 	//one by one modify team details
 	participantObject.UserName = team.UserName
+	participantObject.Password = team.Password
 	participantObject.TeamName = team.TeamName
 	participantObject.ProjectObjective = team.ProjectObjective
 	participantObject.Description = team.Description
@@ -136,15 +140,13 @@ func UpdateTeamDetails(team TeamDetails) error {
 
 	//modify team details with upsert, if doesn't exist create else update
 	_, err = session.DB("UBHacking").C("TeamDetails").Upsert(bson.M{"userName": team.UserName}, bson.M{"$set": participantObject})
-
 	if err != nil {
-		fmt.Println("Unable to find participantObject by ID", err.Error())
-		return errors.New("Unable to find participantObject by ID " + err.Error())
+		log.Error("Unable to find participantObject by ID", err.Error())
+		return errors.New("Unable to find participantObject by ID " + err.Error()), false
 	}
 
-	return err
+	return err, isNew
 }
-
 
 //getAllteamDetails -  obtain all team details
 func GetAllTeamDetails() (GetAllTeamsResponse, error) {
@@ -155,7 +157,7 @@ func GetAllTeamDetails() (GetAllTeamsResponse, error) {
 
 	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
-		fmt.Println("Mongo error", err.Error())
+		log.Error("Mongo error ", err.Error())
 		return response, errors.New("Mongo connection Error " + err.Error())
 	}
 	defer session.Close()
@@ -178,7 +180,7 @@ func Login(userName, password string) (LoginResponse, error) {
 
 	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
-		fmt.Println("Mongo error", err.Error())
+		log.Error("Mongo error ", err.Error())
 		return loginResponse, errors.New("Mongo connection Error " + err.Error())
 	}
 
@@ -187,7 +189,7 @@ func Login(userName, password string) (LoginResponse, error) {
 	// query for authentication
 	err = session.DB("UBHacking").C("TeamDetails").Find(bson.M{"userName": userName, "password": password}).One(&loginResponse)
 	if err != nil {
-		fmt.Println("Unable to find user", err.Error())
+		log.Error("Unable to find User ", err.Error())
 		return loginResponse, errors.New("Unable to find user " + err.Error())
 	}
 
