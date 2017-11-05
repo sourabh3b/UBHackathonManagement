@@ -102,20 +102,6 @@ func UpdateTeamDetails(team TeamDetails) error {
 	//modify team details with upsert, if doesn't exist create else update
 	_, err = session.DB("UBHacking").C("TeamDetails").Upsert(bson.M{"userName": team.UserName}, bson.M{"$set": participantObject})
 
-	//err = session.DB("UBHacking").C("TeamDetails").Upsert(
-	//						bson.M{"userName":team.UserName},
-	//						bson.M{"$set":
-	//							bson.M{
-	//								"userName": team.UserName,
-	//								"teamName": team.TeamName,
-	//								"projectObjective": team.ProjectObjective,
-	//								"description": team.Description,
-	//								"teamLeadName": team.TeamLeadName,
-	//								"teamMembers": team.TeamPlayers,
-	//								"softwareOrProgrammingLanguageUsed" : team.SoftwareOrProgrammingLanguageUsed,
-	//								"hardwareUsed" : team.HardwareUsed,
-	//						},
-	//						})
 	if err != nil {
 		fmt.Println("Unable to find participantObject by ID", err.Error())
 		return errors.New("Unable to find participantObject by ID " + err.Error())
@@ -150,9 +136,7 @@ func GetAllTeamDetails() ([]TeamDetails, error) {
 func Login(userName, password string) (LoginResponse, error) {
 	loginResponse := LoginResponse{}
 
-	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
-	//session, err := mgo.Dial("ec2-54-200-178-6.us-west-2.compute.amazonaws.com") //todo: change this to AWS mongo URL
-	//session, err := mgo.Dial("54.200.178.6") //todo: change this to AWS mongo URL
+	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
 		return loginResponse, errors.New("Mongo connection Error " + err.Error())
