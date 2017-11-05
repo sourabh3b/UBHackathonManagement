@@ -45,27 +45,30 @@ type UpdateResponse struct {
 	Message string `bson:"message" json:"message"`
 }
 
+
+//GetTeamResponse - data model
+type GetTeamResponse struct {
+	Status  int    `bson:"status" json:"status"`
+	Team TeamDetails `bson:"team" json:"team"`
+}
+
 //GetParticipant - handler to get expenses
-func GetParticipant(teamName string) (TeamDetails, error) {
-	participantObject := TeamDetails{}
-	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+func GetTeamByName(teamName string) (TeamDetails, error) {
+	teamObj := TeamDetails{}
+	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
-		return participantObject, errors.New("Mongo connection Error " + err.Error())
+		return teamObj, errors.New("Mongo connection Error " + err.Error())
 	}
 	defer session.Close()
 
-	fmt.Println("input teamName : ", teamName)
-
 	// query
-	err = session.DB("UBHacking").C("Participant").Find(bson.M{"userName": teamName}).One(&participantObject)
+	err = session.DB("UBHacking").C("TeamDetails").Find(bson.M{"userName": teamName}).One(&teamObj)
 	if err != nil {
-		fmt.Println("participantObject > ", participantObject)
 		fmt.Println("Unable to find participantObject by ID", err.Error())
-		return participantObject, errors.New("Unable to find participantObject by ID " + err.Error())
+		return teamObj, errors.New("Unable to find participantObject by ID " + err.Error())
 	}
-
-	return participantObject, err
+	return teamObj, err
 }
 
 ////GetParticipant - handler to get expenses

@@ -14,13 +14,19 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 
 	teamName := r.URL.Query().Get("teamName")
 
-	expenseObject, err := participant.GetParticipant(teamName)
+	getTeamByNameResponse := participant.GetTeamResponse{}
+
+	teamObject, err := participant.GetTeamByName(teamName)
 	if err != nil {
+		getTeamByNameResponse.Status = 403
 		fmt.Println("Cannot get Team Name ", err.Error())
-		render.JSON(w, http.StatusBadGateway, "Team Details")
+		render.JSON(w, http.StatusForbidden, getTeamByNameResponse)
 		return
 	}
-	render.JSON(w, http.StatusOK, expenseObject)
+
+	getTeamByNameResponse.Status = 200
+	getTeamByNameResponse.Team = teamObject
+	render.JSON(w, http.StatusOK, getTeamByNameResponse)
 	return
 }
 
@@ -32,7 +38,7 @@ func TestRoute(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//todo : use this later for login input in POST request
+//todo : use this later for login input in POST request, If time permits
 type User struct {
 	UserName string `bson:"userName" json:"userName"`
 	Password string `bson:"password" json:"password"`
@@ -104,6 +110,7 @@ func main() {
 	http.HandleFunc("/test", TestRoute)
 	http.HandleFunc("/login", LoginHandler)
 	http.HandleFunc("/team/update", UpdateTeamDetails)
-	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
+	http.HandleFunc("/getAllTeams", GetTeamDetailsHandler)
+	http.HandleFunc("/getTeamByName", GetTeamByName)
 	http.ListenAndServe(":8889", nil)
 }
