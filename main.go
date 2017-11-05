@@ -14,6 +14,9 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 
 	teamName := r.URL.Query().Get("teamName")
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	getTeamByNameResponse := participant.GetTeamResponse{}
 
 	teamObject, err := participant.GetTeamByName(teamName)
@@ -46,6 +49,9 @@ type User struct {
 
 //LoginHandler - LoginHandler
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	//userObject := User{}
 	render := render.New()
 	userName := r.URL.Query().Get("userName")
@@ -66,6 +72,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 //UpdateTeamDetails - UpdateTeamDetails
 func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	render := render.New()
 	team := participant.TeamDetails{}
@@ -96,6 +104,9 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTeamDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	render := render.New()
 	teamsResponse, err := participant.GetAllTeamDetails()
 	if err != nil {
