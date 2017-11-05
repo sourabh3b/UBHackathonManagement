@@ -82,13 +82,14 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
 	team := participant.TeamDetails{}
 
-	fmt.Println("**** Input team : ", team)
+
 
 	//decoding the request into team, so that it can be used to save the team details
 	err := json.NewDecoder(r.Body).Decode(&team)
 	if err != nil {
 
 	}
+	fmt.Println("**** Input team : ", team)
 
 	err = participant.UpdateTeamDetails(team)
 
