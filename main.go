@@ -23,7 +23,7 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		getTeamByNameResponse.Status = 403
 		fmt.Println("Cannot get Team Name ", err.Error())
-		render.JSON(w, http.StatusForbidden, getTeamByNameResponse)
+		render.JSON(w, http.StatusOK, getTeamByNameResponse)
 		return
 	}
 
@@ -61,12 +61,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	badResponse := participant.LoginResponse{}
 	badResponse.IsAdmin = false
-	badResponse.Status = 403
+	badResponse.Status = 200
 
 	if resp.Status == 200 {
 		render.JSON(w, http.StatusOK, resp)
 	} else {
-		render.JSON(w, http.StatusForbidden, badResponse)
+		render.JSON(w, http.StatusOK, badResponse)
 	}
 }
 
@@ -110,7 +110,7 @@ func GetTeamDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
 	teamsResponse, err := participant.GetAllTeamDetails()
 	if err != nil {
-		render.JSON(w, http.StatusInternalServerError, teamsResponse)
+		render.JSON(w, http.StatusOK, teamsResponse)
 	} else {
 		render.JSON(w, http.StatusOK, teamsResponse)
 	}
