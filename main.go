@@ -22,6 +22,7 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 	teamObject, err := participant.GetTeamByName(teamName)
 	if err != nil {
 		getTeamByNameResponse.Status = 403
+		getTeamByNameResponse.TypeAPI = 4
 		fmt.Println("Cannot get Team Name ", err.Error())
 		render.JSON(w, http.StatusOK, getTeamByNameResponse)
 		return
@@ -29,6 +30,7 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 
 	getTeamByNameResponse.Status = 200
 	getTeamByNameResponse.Team = teamObject
+	getTeamByNameResponse.TypeAPI = 4
 	render.JSON(w, http.StatusOK, getTeamByNameResponse)
 	return
 }
@@ -67,6 +69,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, http.StatusOK, resp)
 	} else {
 		badResponse.Status = 403
+		badResponse.TypeAPI = 1
 		render.JSON(w, http.StatusOK, badResponse)
 	}
 }
@@ -92,12 +95,14 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 	//if team doesnot exist, create a new team
 	if err != nil {
 		updateResponse.Status = 403
+		updateResponse.TypeAPI = 2
 		updateResponse.Message = "Cannot Update Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
 		return
 	} else {
 		//else update existing team
 		updateResponse.Status = 200
+		updateResponse.TypeAPI = 2
 		updateResponse.Message = "Successfully Updated Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
 		return
@@ -111,8 +116,12 @@ func GetTeamDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
 	teamsResponse, err := participant.GetAllTeamDetails()
 	if err != nil {
+		teamsResponse.TypeAPI = 3
+		teamsResponse.Status = 403
 		render.JSON(w, http.StatusOK, teamsResponse)
 	} else {
+		teamsResponse.TypeAPI = 3
+		teamsResponse.Status = 200
 		render.JSON(w, http.StatusOK, teamsResponse)
 	}
 

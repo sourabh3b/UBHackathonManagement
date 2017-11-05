@@ -37,12 +37,14 @@ type Member struct {
 type LoginResponse struct {
 	Status  int  `bson:"status" json:"status"`
 	IsAdmin bool `bson:"isAdmin" json:"isAdmin"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
 }
 
 //TeamDetails - data model
 type UpdateResponse struct {
 	Status  int    `bson:"status" json:"status"`
 	Message string `bson:"message" json:"message"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
 }
 
 
@@ -50,7 +52,16 @@ type UpdateResponse struct {
 type GetTeamResponse struct {
 	Status  int    `bson:"status" json:"status"`
 	Team TeamDetails `bson:"team" json:"team"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
 }
+
+//GetAllTeamsResponse - data model
+type GetAllTeamsResponse struct {
+	Status  int    `bson:"status" json:"status"`
+	Team []TeamDetails `bson:"team" json:"team"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
+}
+
 
 //GetParticipant - handler to get expenses
 func GetTeamByName(teamName string) (TeamDetails, error) {
@@ -113,15 +124,18 @@ func UpdateTeamDetails(team TeamDetails) error {
 	return err
 }
 
+
 //getAllteamDetails -  obtain all team details
-func GetAllTeamDetails() ([]TeamDetails, error) {
+func GetAllTeamDetails() (GetAllTeamsResponse, error) {
+	response := GetAllTeamsResponse{}
+
 	teams := []TeamDetails{}
 	teamsResponse := []TeamDetails{}
 
-	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
-		return teamsResponse, errors.New("Mongo connection Error " + err.Error())
+		return response, errors.New("Mongo connection Error " + err.Error())
 	}
 	defer session.Close()
 	err = session.DB("UBHacking").C("TeamDetails").Find(nil).All(&teams)
@@ -131,7 +145,9 @@ func GetAllTeamDetails() ([]TeamDetails, error) {
 			teamsResponse = append(teamsResponse, val)
 		}
 	}
-	return teamsResponse, err
+	response.TypeAPI = 3
+	response.Team = teamsResponse
+	return response, err
 
 }
 
@@ -155,6 +171,7 @@ func Login(userName, password string) (LoginResponse, error) {
 	}
 
 	loginResponse.Status = 200
+	loginResponse.TypeAPI = 1
 
 	return loginResponse, err
 }
