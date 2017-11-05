@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-//GetTeamByName - handler to get team details by name
+//GetTeamByName - handler to get team details by names
 func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 	render := render.New()
 
@@ -80,17 +80,18 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	fmt.Println("******* input ******", team)
 	err = participant.UpdateTeamDetails(team)
 
 	updateResponse := participant.UpdateResponse{}
 
+	//if team doesnot exist, create a new team
 	if err != nil {
 		updateResponse.Status = 403
 		updateResponse.Message = "Cannot Update Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
 		return
 	} else {
+		//else update existing team
 		updateResponse.Status = 200
 		updateResponse.Message = "Successfully Updated Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
@@ -98,11 +99,22 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetTeamDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	render := render.New()
+	teamsResponse, err := participant.GetAllTeamDetails()
+	if err != nil {
+		render.JSON(w, http.StatusInternalServerError, teamsResponse)
+	} else {
+		render.JSON(w, http.StatusOK, teamsResponse)
+	}
+
+}
 func main() {
 	fmt.Println("Started UB Hackathon Management....")
 	http.HandleFunc("/test", TestRoute)
 	http.HandleFunc("/login", LoginHandler)
 	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
 	http.HandleFunc("/team/update", UpdateTeamDetails)
+	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
 	http.ListenAndServe(":8889", nil)
 }

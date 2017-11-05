@@ -18,7 +18,7 @@ type TeamDetails struct {
 	TeamLeadName                      string   `bson:"teamLeadName" json:"teamLeadName"`
 	TeamPlayers                       []Member `bson:"teamMembers" json:"teamMembers"`
 	SoftwareOrProgrammingLanguageUsed []string `bson:"softwareOrProgrammingLanguageUsed" json:"softwareOrProgrammingLanguageUsed"`
-	HardwareUsed                      string   `bson:"hardwareUsed" json:"hardwareUsed"`
+	HardwareUsed                      []string `bson:"hardwareUsed" json:"hardwareUsed"`
 }
 
 type Member struct {
@@ -100,30 +100,43 @@ func UpdateTeamDetails(team TeamDetails) error {
 
 	defer session.Close()
 
-	fmt.Println("input  **** : ",team.UserName)
-
 	//query to get team details
 	err = session.DB("UBHacking").C("TeamDetails").Find(bson.M{"userName": team.UserName}).One(&participantObject)
+
+	//team doesn't exist, create new team
 	if err != nil {
+		participantObject.Password = "testpwd"
 		fmt.Println("Unable to find participantObject by ID", err.Error())
-		return errors.New("Unable to find participantObject by ID " + err.Error())
+		//return errors.New("Unable to find participantObject by ID " + err.Error())
 	}
 
-	//modify team details
-	err = session.DB("UBHacking").C("TeamDetails").Update(
-							bson.M{"userName":team.UserName},
-							bson.M{"$set":
-								bson.M{
-									"userName": team.UserName,
-									"teamName": team.TeamName,
-									"projectObjective": team.ProjectObjective,
-									"description": team.Description,
-									"teamLeadName": team.TeamLeadName,
-									"teamMembers": team.TeamPlayers,
-									"softwareOrProgrammingLanguageUsed" : team.SoftwareOrProgrammingLanguageUsed,
-									"hardwareUsed" : team.HardwareUsed,
-							},
-							})
+	//one by one modify team details
+	participantObject.UserName = team.UserName
+	participantObject.TeamName = team.TeamName
+	participantObject.ProjectObjective = team.ProjectObjective
+	participantObject.Description = team.Description
+	participantObject.TeamLeadName = team.TeamLeadName
+	participantObject.TeamPlayers = team.TeamPlayers
+	participantObject.SoftwareOrProgrammingLanguageUsed = team.SoftwareOrProgrammingLanguageUsed
+	participantObject.HardwareUsed = team.HardwareUsed
+
+	//modify team details with upsert, if doesn't exist create else update
+	_, err = session.DB("UBHacking").C("TeamDetails").Upsert(bson.M{"userName": team.UserName}, bson.M{"$set": participantObject})
+
+	//err = session.DB("UBHacking").C("TeamDetails").Upsert(
+	//						bson.M{"userName":team.UserName},
+	//						bson.M{"$set":
+	//							bson.M{
+	//								"userName": team.UserName,
+	//								"teamName": team.TeamName,
+	//								"projectObjective": team.ProjectObjective,
+	//								"description": team.Description,
+	//								"teamLeadName": team.TeamLeadName,
+	//								"teamMembers": team.TeamPlayers,
+	//								"softwareOrProgrammingLanguageUsed" : team.SoftwareOrProgrammingLanguageUsed,
+	//								"hardwareUsed" : team.HardwareUsed,
+	//						},
+	//						})
 	if err != nil {
 		fmt.Println("Unable to find participantObject by ID", err.Error())
 		return errors.New("Unable to find participantObject by ID " + err.Error())
@@ -132,11 +145,35 @@ func UpdateTeamDetails(team TeamDetails) error {
 	return err
 }
 
+//getAllteamDetails -  obtain all team details
+func GetAllTeamDetails() ([]TeamDetails, error) {
+	teams := []TeamDetails{}
+	teamsResponse := []TeamDetails{}
+
+	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	if err != nil {
+		fmt.Println("Mongo error", err.Error())
+		return teamsResponse, errors.New("Mongo connection Error " + err.Error())
+	}
+	defer session.Close()
+	err = session.DB("UBHacking").C("TeamDetails").Find(nil).All(&teams)
+
+	for _, val := range teams {
+		if !val.IsAdmin {
+			teamsResponse = append(teamsResponse, val)
+		}
+	}
+	return teamsResponse, err
+
+}
+
 //Login - Login
 func Login(userName, password string) (LoginResponse, error) {
 	loginResponse := LoginResponse{}
 
 	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	//session, err := mgo.Dial("ec2-54-200-178-6.us-west-2.compute.amazonaws.com") //todo: change this to AWS mongo URL
+	//session, err := mgo.Dial("54.200.178.6") //todo: change this to AWS mongo URL
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
 		return loginResponse, errors.New("Mongo connection Error " + err.Error())
