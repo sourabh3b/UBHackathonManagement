@@ -6,7 +6,6 @@ import (
 	"github.com/UBHackathonManagement/participant"
 	"github.com/unrolled/render"
 	"net/http"
-	"log"
 )
 
 //GetTeamByName - handler to get team details by names
