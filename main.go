@@ -14,13 +14,24 @@ func GetTeamByName(w http.ResponseWriter, r *http.Request) {
 
 	teamName := r.URL.Query().Get("teamName")
 
-	expenseObject, err := participant.GetParticipant(teamName)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	getTeamByNameResponse := participant.GetTeamResponse{}
+
+	teamObject, err := participant.GetTeamByName(teamName)
 	if err != nil {
+		getTeamByNameResponse.Status = 403
+		getTeamByNameResponse.TypeAPI = 4
 		fmt.Println("Cannot get Team Name ", err.Error())
-		render.JSON(w, http.StatusBadGateway, "Team Details")
+		render.JSON(w, http.StatusOK, getTeamByNameResponse)
 		return
 	}
-	render.JSON(w, http.StatusOK, expenseObject)
+
+	getTeamByNameResponse.Status = 200
+	getTeamByNameResponse.Team = teamObject
+	getTeamByNameResponse.TypeAPI = 4
+	render.JSON(w, http.StatusOK, getTeamByNameResponse)
 	return
 }
 
@@ -32,7 +43,7 @@ func TestRoute(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//todo : use this later for login input in POST request
+//todo : use this later for login input in POST request, If time permits
 type User struct {
 	UserName string `bson:"userName" json:"userName"`
 	Password string `bson:"password" json:"password"`
@@ -40,6 +51,9 @@ type User struct {
 
 //LoginHandler - LoginHandler
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	//userObject := User{}
 	render := render.New()
 	userName := r.URL.Query().Get("userName")
@@ -49,12 +63,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	badResponse := participant.LoginResponse{}
 	badResponse.IsAdmin = false
-	badResponse.Status = 403
+	badResponse.Status = 200
 
 	if resp.Status == 200 {
 		render.JSON(w, http.StatusOK, resp)
 	} else {
-		render.JSON(w, http.StatusForbidden, badResponse)
+		badResponse.Status = 403
+		badResponse.TypeAPI = 1
+		render.JSON(w, http.StatusOK, badResponse)
 	}
 }
 
@@ -70,6 +86,8 @@ func GetTeamDetailsHandler(w http.ResponseWriter,r *http.Request){
 }
 //UpdateTeamDetails - UpdateTeamDetails
 func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	render := render.New()
 	team := participant.TeamDetails{}
@@ -87,12 +105,14 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 	//if team doesnot exist, create a new team
 	if err != nil {
 		updateResponse.Status = 403
+		updateResponse.TypeAPI = 2
 		updateResponse.Message = "Cannot Update Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
 		return
 	} else {
 		//else update existing team
 		updateResponse.Status = 200
+		updateResponse.TypeAPI = 2
 		updateResponse.Message = "Successfully Updated Team Details"
 		render.JSON(w, http.StatusOK, updateResponse)
 		return
@@ -100,11 +120,18 @@ func UpdateTeamDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetTeamDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	render := render.New()
 	teamsResponse, err := participant.GetAllTeamDetails()
 	if err != nil {
-		render.JSON(w, http.StatusInternalServerError, teamsResponse)
+		teamsResponse.TypeAPI = 3
+		teamsResponse.Status = 403
+		render.JSON(w, http.StatusOK, teamsResponse)
 	} else {
+		teamsResponse.TypeAPI = 3
+		teamsResponse.Status = 200
 		render.JSON(w, http.StatusOK, teamsResponse)
 	}
 
@@ -115,6 +142,7 @@ func main() {
 	http.HandleFunc("/login", LoginHandler)
 	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
 	http.HandleFunc("/team/update", UpdateTeamDetails)
-	http.HandleFunc("/getTeamDetails", GetTeamDetailsHandler)
+	http.HandleFunc("/getAllTeams", GetTeamDetailsHandler)
+	http.HandleFunc("/getTeamByName", GetTeamByName)
 	http.ListenAndServe(":8889", nil)
 }

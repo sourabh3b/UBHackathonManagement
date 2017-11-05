@@ -37,35 +37,49 @@ type Member struct {
 type LoginResponse struct {
 	Status  int  `bson:"status" json:"status"`
 	IsAdmin bool `bson:"isAdmin" json:"isAdmin"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
 }
 
 //TeamDetails - data model
 type UpdateResponse struct {
 	Status  int    `bson:"status" json:"status"`
 	Message string `bson:"message" json:"message"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
 }
 
+
+//GetTeamResponse - data model
+type GetTeamResponse struct {
+	Status  int    `bson:"status" json:"status"`
+	Team TeamDetails `bson:"team" json:"team"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
+}
+
+//GetAllTeamsResponse - data model
+type GetAllTeamsResponse struct {
+	Status  int    `bson:"status" json:"status"`
+	Team []TeamDetails `bson:"team" json:"team"`
+	TypeAPI int  `bson:"typeAPI" json:"typeAPI"`
+}
+
+
 //GetParticipant - handler to get expenses
-func GetParticipant(teamName string) (TeamDetails, error) {
-	participantObject := TeamDetails{}
-	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+func GetTeamByName(teamName string) (TeamDetails, error) {
+	teamObj := TeamDetails{}
+	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
-		return participantObject, errors.New("Mongo connection Error " + err.Error())
+		return teamObj, errors.New("Mongo connection Error " + err.Error())
 	}
 	defer session.Close()
 
-	fmt.Println("input teamName : ", teamName)
-
 	// query
-	err = session.DB("UBHacking").C("Participant").Find(bson.M{"userName": teamName}).One(&participantObject)
+	err = session.DB("UBHacking").C("TeamDetails").Find(bson.M{"userName": teamName}).One(&teamObj)
 	if err != nil {
-		fmt.Println("participantObject > ", participantObject)
 		fmt.Println("Unable to find participantObject by ID", err.Error())
-		return participantObject, errors.New("Unable to find participantObject by ID " + err.Error())
+		return teamObj, errors.New("Unable to find participantObject by ID " + err.Error())
 	}
-
-	return participantObject, err
+	return teamObj, err
 }
 
 //getAllteamDetails -  obtain all team details
@@ -123,20 +137,6 @@ func UpdateTeamDetails(team TeamDetails) error {
 	//modify team details with upsert, if doesn't exist create else update
 	_, err = session.DB("UBHacking").C("TeamDetails").Upsert(bson.M{"userName": team.UserName}, bson.M{"$set": participantObject})
 
-	//err = session.DB("UBHacking").C("TeamDetails").Upsert(
-	//						bson.M{"userName":team.UserName},
-	//						bson.M{"$set":
-	//							bson.M{
-	//								"userName": team.UserName,
-	//								"teamName": team.TeamName,
-	//								"projectObjective": team.ProjectObjective,
-	//								"description": team.Description,
-	//								"teamLeadName": team.TeamLeadName,
-	//								"teamMembers": team.TeamPlayers,
-	//								"softwareOrProgrammingLanguageUsed" : team.SoftwareOrProgrammingLanguageUsed,
-	//								"hardwareUsed" : team.HardwareUsed,
-	//						},
-	//						})
 	if err != nil {
 		fmt.Println("Unable to find participantObject by ID", err.Error())
 		return errors.New("Unable to find participantObject by ID " + err.Error())
@@ -145,15 +145,18 @@ func UpdateTeamDetails(team TeamDetails) error {
 	return err
 }
 
+
 //getAllteamDetails -  obtain all team details
-func GetAllTeamDetails() ([]TeamDetails, error) {
+func GetAllTeamDetails() (GetAllTeamsResponse, error) {
+	response := GetAllTeamsResponse{}
+
 	teams := []TeamDetails{}
 	teamsResponse := []TeamDetails{}
 
-	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
+	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
-		return teamsResponse, errors.New("Mongo connection Error " + err.Error())
+		return response, errors.New("Mongo connection Error " + err.Error())
 	}
 	defer session.Close()
 	err = session.DB("UBHacking").C("TeamDetails").Find(nil).All(&teams)
@@ -163,7 +166,9 @@ func GetAllTeamDetails() ([]TeamDetails, error) {
 			teamsResponse = append(teamsResponse, val)
 		}
 	}
-	return teamsResponse, err
+	response.TypeAPI = 3
+	response.Team = teamsResponse
+	return response, err
 
 }
 
@@ -171,9 +176,7 @@ func GetAllTeamDetails() ([]TeamDetails, error) {
 func Login(userName, password string) (LoginResponse, error) {
 	loginResponse := LoginResponse{}
 
-	session, err := mgo.Dial("127.0.0.1") //todo: change this to AWS mongo URL
-	//session, err := mgo.Dial("ec2-54-200-178-6.us-west-2.compute.amazonaws.com") //todo: change this to AWS mongo URL
-	//session, err := mgo.Dial("54.200.178.6") //todo: change this to AWS mongo URL
+	session, err := mgo.Dial("127.0.0.1")
 	if err != nil {
 		fmt.Println("Mongo error", err.Error())
 		return loginResponse, errors.New("Mongo connection Error " + err.Error())
@@ -189,6 +192,7 @@ func Login(userName, password string) (LoginResponse, error) {
 	}
 
 	loginResponse.Status = 200
+	loginResponse.TypeAPI = 1
 
 	return loginResponse, err
 }
