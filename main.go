@@ -66,6 +66,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if resp.Status == 200 {
 		render.JSON(w, http.StatusOK, resp)
 	} else {
+		badResponse.Status = 403
 		render.JSON(w, http.StatusOK, badResponse)
 	}
 }
